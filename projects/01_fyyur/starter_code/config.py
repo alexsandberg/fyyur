@@ -10,4 +10,4 @@ DEBUG = True
 
 
 # TODO IMPLEMENT DATABASE URL
-SQLALCHEMY_DATABASE_URI = 'postgres://alex@localhost:5432/todoapp'
+SQLALCHEMY_DATABASE_URI = 'postgres://alex@localhost:5432/fyyur'
