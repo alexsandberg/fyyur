@@ -263,13 +263,13 @@ def create_venue_submission():
     # TODO: insert form data as a new Venue record in the db, instead
     try:
         form = VenueForm()
-        name = form.name.data
-        city = form.city.data
-        state = form.state.data
-        address = form.address.data
-        phone = form.phone.data
-        genres = form.genres.data
-        facebook_link = form.facebook_link.data
+        name = request.form['name']
+        city = request.form['city']
+        state = request.form['state']
+        address = request.form['address']
+        phone = request.form['phone']
+        genres = request.form['genres']
+        facebook_link = request.form['facebook_link']
 
         venue = Venue(name=name, city=city, state=state, address=address,
                       phone=phone, genres=genres, facebook_link=facebook_link)
