@@ -123,6 +123,32 @@ def index():
 def venues():
     # TODO: replace with real venues data.
     #       num_shows should be aggregated based on number of upcoming shows per venue.
+
+    data = []
+
+    venues = Venue.query.all()
+    venue_cities = set()
+    for venue in venues:
+        venue_cities.add((venue.city, venue.state))
+
+    for location in venue_cities:
+        data.append({
+            "city": location[0],
+            "state": location[1],
+            "venues": []
+        })
+
+    for venue in venues:
+        for entry in data:
+            if venue.city == entry['city'] and venue.state == entry['state']:
+                entry['venues'].append({
+                    "id": venue.id,
+                    "name": venue.name,
+                    "num_upcoming_shows": Show.query.filter_by(venue_id=venue.id).count()
+                })
+
+    print(data)
+
     data = [{
         "city": "San Francisco",
         "state": "CA",
@@ -167,6 +193,7 @@ def search_venues():
 def show_venue(venue_id):
     # shows the venue page with the given venue_id
     # TODO: replace with real venue data from the venues table, using venue_id
+
     data1 = {
         "id": 1,
         "name": "The Musical Hop",
