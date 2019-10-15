@@ -262,7 +262,6 @@ def create_venue_form():
 def create_venue_submission():
     # TODO: insert form data as a new Venue record in the db, instead
     try:
-        form = VenueForm()
         name = request.form['name']
         city = request.form['city']
         state = request.form['state']
@@ -281,7 +280,7 @@ def create_venue_submission():
     except:
         db.session.rollback()
         flash('An error occurred. Venue ' +
-              form.name.data + ' could not be listed.')
+              request.form['name'] + ' could not be listed.')
         # TODO: modify data to be the data object returned from db insertion
     finally:
         # always close the session
@@ -489,8 +488,33 @@ def create_artist_submission():
     # TODO: insert form data as a new Venue record in the db, instead
     # TODO: modify data to be the data object returned from db insertion
 
+    try:
+        name = request.form['name']
+        city = request.form['city']
+        state = request.form['state']
+        phone = request.form['phone']
+        genres = request.form['genres']
+        facebook_link = request.form['facebook_link']
+
+        artist = Artist(name=name, city=city, state=state, phone=phone,
+                        genres=genres, facebook_link=facebook_link)
+
+        db.session.add(artist)
+        db.session.commit()
+
+        flash('Artist ' + request.form['name'] + ' was successfully listed!')
+    except:
+        db.session.rollback()
+        flash('An error occurred. Artist ' +
+              request.form['name'] + ' could not be listed.')
+        # TODO: modify data to be the data object returned from db insertion
+    finally:
+        # always close the session
+        db.session.close()
+        # on successful db insert, flash success
+
     # on successful db insert, flash success
-    flash('Artist ' + request.form['name'] + ' was successfully listed!')
+
     # TODO: on unsuccessful db insert, flash an error instead.
     # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
     return render_template('pages/home.html')
