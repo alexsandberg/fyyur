@@ -5,7 +5,7 @@
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import Flask, render_template, request, Response, flash, redirect, url_for, jsonify
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -298,7 +298,7 @@ def show_venue(venue_id):
     # data = list(filter(lambda d: d['id'] ==
     #                    venue_id, [data1, data2, data3]))[0]
 
-    venue = Venue.query.filter_by(id=venue_id).all()
+    venue = Venue.query.filter_by(id=venue_id).first()
 
     # print('venue display', venue[0])
 
@@ -335,18 +335,18 @@ def show_venue(venue_id):
         return past
 
     data = {
-        "id": venue[0].id,
-        "name": venue[0].name,
-        "genres": venue[0].genres,
-        "address": venue[0].address,
-        "city": venue[0].city,
-        "state": venue[0].state,
-        "phone": venue[0].phone,
-        "website": "https://www.themusicalhop.com",
-        "facebook_link": venue[0].facebook_link,
-        "seeking_talent": True,
-        "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-        "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
+        "id": venue.id,
+        "name": venue.name,
+        "genres": venue.genres,
+        "address": venue.address,
+        "city": venue.city,
+        "state": venue.state,
+        "phone": venue.phone,
+        "website": venue.website,
+        "facebook_link": venue.facebook_link,
+        "seeking_talent": venue.seeking_talent,
+        "seeking_description": venue.seeking_description,
+        "image_link": venue.image_link,
         "past_shows": past_shows(),
         "upcoming_shows": upcoming_shows(),
         "past_shows_count": len(past_shows()),
@@ -409,10 +409,24 @@ def create_venue_submission():
 def delete_venue(venue_id):
     # TODO: Complete this endpoint for taking a venue_id, and using
     # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+    try:
+        venue = Venue.query.filter_by(id=venue_id).first()
+        name = venue.name
+
+        db.session.delete(venue)
+        db.session.commit()
+
+        flash('Venue ' + name + ' was successfully deleted.')
+    except:
+        db.session.rollback()
+
+        flash('An error occurred. Venue ' + name + ' could not be deleted.')
+    finally:
+        db.session.close()
 
     # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
     # clicking that button delete it from the db then redirect the user to the homepage
-    return None
+    return jsonify({'success': True})
 
 #  Artists
 #  ----------------------------------------------------------------
