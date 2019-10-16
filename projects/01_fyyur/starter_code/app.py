@@ -527,6 +527,34 @@ def show_artist(artist_id):
 
     # genres = artist[0].genres[1:-1:1].split(',')
 
+    def upcoming_shows():
+        upcoming = []
+        shows = Show.query.filter_by(artist_id=artist_id).all()
+
+        for show in shows:
+            if show.start_time > datetime.now():
+                upcoming.append({
+                    "venue_id": show.venue_id,
+                    "venue_name": Venue.query.filter_by(id=show.venue_id).all()[0].name,
+                    "venue_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
+                    "start_time": format_datetime(str(show.start_time))
+                })
+        return upcoming
+
+    def past_shows():
+        past = []
+        shows = Show.query.filter_by(artist_id=artist_id).all()
+
+        for show in shows:
+            if show.start_time < datetime.now():
+                past.append({
+                    "venue_id": show.venue_id,
+                    "venue_name": Venue.query.filter_by(id=show.venue_id).all()[0].name,
+                    "venue_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
+                    "start_time": format_datetime(str(show.start_time))
+                })
+        return past
+
     data = {
         "id": artist[0].id,
         "name": artist[0].name,
@@ -540,15 +568,10 @@ def show_artist(artist_id):
         "seeking_talent": True,
         "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
         "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
-        "past_shows": [{
-            "artist_id": 4,
-            "artist_name": "Guns N Petals",
-            "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-            "start_time": "2019-05-21T21:30:00.000Z"
-        }],
-        "upcoming_shows": [],
-        "past_shows_count": 1,
-        "upcoming_shows_count": 0,
+        "past_shows": past_shows(),
+        "upcoming_shows": upcoming_shows(),
+        "past_shows_count": len(past_shows()),
+        "upcoming_shows_count": len(upcoming_shows()),
     }
 
     return render_template('pages/show_artist.html', artist=data)
