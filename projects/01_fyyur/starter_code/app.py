@@ -618,11 +618,17 @@ def edit_venue_submission(venue_id):
         venue.address = form.address.data
         venue.phone = form.phone.data
         venue.facebook_link = form.facebook_link.data
+        venue.website = form.website.data
+        venue.image_link = form.image_link.data
+        venue.seeking_talent = True if form.seeking_talent.data == 'Yes' else False
+        venue.seeking_description = form.seeking_description.data
 
         db.session.commit()
-
+        flash('Venue ' + request.form['name'] + ' was successfully updated!')
     except:
         db.session.rollback()
+        flash('An error occurred. Venue ' +
+              request.form['name'] + ' could not be updated.')
     finally:
         db.session.close()
 
