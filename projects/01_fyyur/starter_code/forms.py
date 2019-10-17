@@ -1,8 +1,7 @@
 from datetime import datetime
 from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, ValidationError
+from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField
 from wtforms.validators import DataRequired, AnyOf, URL
-import phonenumbers
 
 
 class ShowForm(Form):
@@ -17,12 +16,6 @@ class ShowForm(Form):
         validators=[DataRequired()],
         default=datetime.today()
     )
-
-
-# def phone_validator(num):
-#     if not phonenumbers.is_valid_number(phonenumbers.parse(num, "US")):
-#         print('INVALID PHONE NUMBER')
-#         raise ValidationError('Must be a valid US phone number')
 
 
 class VenueForm(Form):
@@ -94,12 +87,6 @@ class VenueForm(Form):
     phone = StringField(
         'phone', validators=[DataRequired()]
     )
-
-    # def validate_phone(self, phone):
-    #     if not phonenumbers.is_valid_number(phonenumbers.parse(phone.data, "US")):
-    #         print('INVALID PHONE NUMBER')
-    #         raise ValidationError('Must be a valid US phone number')
-
     image_link = StringField(
         'image_link'
     )
@@ -212,12 +199,6 @@ class ArtistForm(Form):
     phone = StringField(
         'phone', validators=[DataRequired()]
     )
-
-    # def validate_phone(self, phone):
-    #     if not phonenumbers.is_valid_number(phonenumbers.parse(phone.data, "US")):
-    #         print('INVALID PHONE NUMBER')
-    #         raise ValidationError('Must be a valid US phone number')
-
     image_link = StringField(
         'image_link', validators=[URL()]
     )
@@ -263,7 +244,3 @@ class ArtistForm(Form):
     seeking_description = StringField(
         'seeking_description'
     )
-
-
-# def phone_validator(num):
-#     return phonenumbers.is_valid_number(phonenumbers.parse(num, "US"))
