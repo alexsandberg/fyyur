@@ -559,11 +559,18 @@ def edit_artist_submission(artist_id):
         artist.state = form.state.data
         artist.phone = form.phone.data
         artist.facebook_link = form.facebook_link.data
+        artist.image_link = form.image_link.data
+        artist.website = form.website.data
+        artist.seeking_venue = True if form.seeking_venue.data == 'Yes' else False
+        artist.seeking_description = form.seeking_description.data
 
         db.session.commit()
 
+        flash('Artist ' + request.form['name'] + ' was successfully updated!')
     except:
         db.session.rollback()
+        flash('An error occurred. Artist ' +
+              request.form['name'] + ' could not be updated.')
     finally:
         db.session.close()
 
