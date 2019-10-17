@@ -483,6 +483,7 @@ def edit_artist_submission(artist_id):
         artist.city = form.city.data
         artist.state = form.state.data
         artist.phone = form.phone.data
+        phone_validator(artist.phone)
         artist.facebook_link = form.facebook_link.data
         artist.image_link = form.image_link.data
         artist.website = form.website.data
@@ -492,6 +493,10 @@ def edit_artist_submission(artist_id):
         db.session.commit()
 
         flash('Artist ' + request.form['name'] + ' was successfully updated!')
+    except ValidationError as e:
+        db.session.rollback()
+        flash('An error occurred. Artist ' +
+              request.form['name'] + ' could not be listed. ' + str(e))
     except:
         db.session.rollback()
         flash('An error occurred. Artist ' +
@@ -542,6 +547,7 @@ def edit_venue_submission(venue_id):
         venue.state = form.state.data
         venue.address = form.address.data
         venue.phone = form.phone.data
+        phone_validator(venue.phone)
         venue.facebook_link = form.facebook_link.data
         venue.website = form.website.data
         venue.image_link = form.image_link.data
@@ -550,6 +556,10 @@ def edit_venue_submission(venue_id):
 
         db.session.commit()
         flash('Venue ' + request.form['name'] + ' was successfully updated!')
+    except ValidationError as e:
+        db.session.rollback()
+        flash('An error occurred. Venue ' +
+              request.form['name'] + ' could not be listed. ' + str(e))
     except:
         db.session.rollback()
         flash('An error occurred. Venue ' +
