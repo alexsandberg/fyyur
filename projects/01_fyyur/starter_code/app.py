@@ -8,10 +8,12 @@ import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for, jsonify
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
+import phonenumbers
 from datetime import datetime
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
+from wtforms import ValidationError
 from forms import *
 from flask_migrate import Migrate
 #----------------------------------------------------------------------------#
@@ -106,6 +108,12 @@ def format_datetime(value, format='medium'):
 
 
 app.jinja_env.filters['datetime'] = format_datetime
+
+
+def phone_validator(num):
+    parsed = phonenumbers.parse(num, "US")
+    if not phonenumbers.is_valid_number(parsed):
+        raise ValidationError('Must be a valid US phone number.')
 
 #----------------------------------------------------------------------------#
 # Controllers.
@@ -261,13 +269,14 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
     # TODO: insert form data as a new Venue record in the db, instead
-    form = VenueForm()
     try:
+        form = VenueForm()
         name = form.name.data
         city = form.city.data
         state = form.state.data
         address = form.address.data
         phone = form.phone.data
+        phone_validator(phone)
         genres = form.genres.data
         facebook_link = form.facebook_link.data
         website = form.website.data
@@ -285,6 +294,10 @@ def create_venue_submission():
         db.session.commit()
 
         flash('Venue ' + request.form['name'] + ' was successfully listed!')
+    except ValidationError as e:
+        db.session.rollback()
+        flash('An error occurred. Venue ' +
+              request.form['name'] + ' could not be listed. ' + str(e))
     except:
         db.session.rollback()
         flash('An error occurred. Venue ' +
@@ -656,6 +669,7 @@ def create_artist_submission():
         city = form.city.data
         state = form.state.data
         phone = form.phone.data
+        phone_validator(phone)
         genres = form.genres.data
         facebook_link = form.facebook_link.data
         website = form.website.data
@@ -673,11 +687,15 @@ def create_artist_submission():
         db.session.commit()
 
         flash('Artist ' + request.form['name'] + ' was successfully listed!')
+    except ValidationError as e:
+        db.session.rollback()
+        flash('An error occurred. Artist ' +
+              request.form['name'] + ' could not be listed. ' + str(e))
+        # TODO: modify data to be the data object returned from db insertion
     except:
         db.session.rollback()
         flash('An error occurred. Artist ' +
               request.form['name'] + ' could not be listed.')
-        # TODO: modify data to be the data object returned from db insertion
     finally:
         # always close the session
         db.session.close()
