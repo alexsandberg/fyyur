@@ -78,9 +78,27 @@
         {% endfor %}
     </div>
 </section>
-<button type="submit" onclick="deleteClickHandler(this)" data-id="{{ venue.id }}" class="btn btn-primary btn-lg"
-    style="width: 200px;">Delete Venue</button>
+<section>
+    <button type="submit" onclick="editClickHandler(this)" data-id="{{ venue.id }}" class="btn btn-primary btn-lg"
+        style="width: 200px;">Edit Venue</button>
+    <button type="submit" onclick="deleteClickHandler(this)" data-id="{{ venue.id }}" class="btn btn-primary btn-lg"
+        style="width: 200px;">Delete Venue</button>
+</section>
 <script>
+    function editClickHandler(e) {
+        console.log('clicked')
+        const venueId = e.dataset.id;
+        fetch(`/venues/${venueId}/edit`, {
+            method: 'GET'
+        })
+            .then(function () {
+                window.location.href = `/venues/${venueId}/edit`;
+            })
+            .catch(function (e) {
+                console.log('error', e)
+            })
+    }
+
     function deleteClickHandler(e) {
         console.log('clicked')
         const venueId = e.dataset.id;
@@ -90,9 +108,9 @@
             .then(function () {
                 window.location.href = `/venues`;
             })
-        // .catch(function () {
-        //     document.getElementById('error').className = '';
-        // })
+            .catch(function (e) {
+                console.log('error', e)
+            })
     }
 </script>
 {% endblock %}
