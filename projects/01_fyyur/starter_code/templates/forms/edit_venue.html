@@ -7,51 +7,51 @@
                 title="Back to homepage"><i class="fa fa-home pull-right"></i></a></h3>
         <div class="form-group">
             <label for="name">Name</label>
-            {{ form.name(class_ = 'form-control', autofocus = true) }}
+            {{ form.name(class_ = 'form-control', placeholder=venue.name, autofocus = true) }}
         </div>
         <div class="form-group">
             <label>City & State</label>
             <div class="form-inline">
                 <div class="form-group">
-                    {{ form.city(class_ = 'form-control', placeholder='City', autofocus = true) }}
+                    {{ form.city(class_ = 'form-control', placeholder=venue.city, autofocus = true) }}
                 </div>
                 <div class="form-group">
-                    {{ form.state(class_ = 'form-control', placeholder='State', autofocus = true) }}
+                    {{ form.state(class_ = 'form-control', placeholder=venue.state, autofocus = true) }}
                 </div>
             </div>
         </div>
         <div class="form-group">
             <label for="address">Address</label>
-            {{ form.address(class_ = 'form-control', autofocus = true) }}
+            {{ form.address(class_ = 'form-control', placeholder=venue.address, autofocus = true) }}
         </div>
         <div class="form-group">
             <label for="phone">Phone</label>
-            {{ form.phone(class_ = 'form-control', placeholder='xxx-xxx-xxxx', autofocus = true) }}
+            {{ form.phone(class_ = 'form-control', placeholder=venue.phone, autofocus = true) }}
         </div>
         <div class="form-group">
             <label for="genres">Genres</label>
             <small>Ctrl+Click to select multiple</small>
-            {{ form.genres(class_ = 'form-control', placeholder='Genres, separated by commas', id=form.state, autofocus = true) }}
+            {{ form.genres(class_ = 'form-control', placeholder=venue.genres, id=form.state, autofocus = true) }}
         </div>
         <div class="form-group">
             <label for="genres">Facebook Link</label>
-            {{ form.facebook_link(class_ = 'form-control', placeholder='http://', id=form.state, autofocus = true) }}
+            {{ form.facebook_link(class_ = 'form-control', placeholder=venue.facebook_link, id=form.state, autofocus = true) }}
         </div>
         <div class="form-group">
             <label for="genres">Image Link</label>
-            {{ form.image_link(class_ = 'form-control', placeholder='http://', id=form.state, autofocus = true) }}
+            {{ form.image_link(class_ = 'form-control', placeholder=venue.image_link, id=form.state, autofocus = true) }}
         </div>
         <div class="form-group">
             <label for="genres">Website</label>
-            {{ form.website(class_ = 'form-control', placeholder='http://', id=form.state, autofocus = true) }}
+            {{ form.website(class_ = 'form-control', placeholder=venue.website, id=form.state, autofocus = true) }}
         </div>
         <div class="form-group">
             <label>Seeking Talent?</label>
-            {{ form.seeking_talent(class_ = 'form-control', placeholder='Seeking Talent?', autofocus = true) }}
+            {{ form.seeking_talent(class_ = 'form-control', placeholder=venue.seeking_talent, autofocus = true) }}
         </div>
         <div class="form-group">
             <label>Description For Talent</label>
-            {{ form.seeking_description(class_ = 'form-control', placeholder='Let artists know what you need!', autofocus = true) }}
+            {{ form.seeking_description(class_ = 'form-control', placeholder=venue.seeking_description, autofocus = true) }}
         </div>
         <input type="submit" value="Edit Venue" class="btn btn-primary btn-lg btn-block">
     </form>

@@ -2,15 +2,26 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-from flask import Flask
+import json
+import dateutil.parser
+import babel
+from flask import Flask, render_template, request, Response, flash, redirect, url_for, jsonify
+from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
+import phonenumbers
 from datetime import datetime
+import logging
+from logging import Formatter, FileHandler
+from flask_wtf import Form
+from wtforms import ValidationError
+from forms import *
 from flask_migrate import Migrate
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
 
 app = Flask(__name__)
+moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -20,6 +31,8 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
+
+# Venue model
 
 
 class Venue(db.Model):
@@ -43,6 +56,7 @@ class Venue(db.Model):
         return f'<Venue {self.id} {self.name}>'
 
 
+# Artist model
 class Artist(db.Model):
     __tablename__ = 'Artist'
 
@@ -63,6 +77,7 @@ class Artist(db.Model):
         return f'<Artist {self.id} {self.name}>'
 
 
+# Show model
 class Show(db.Model):
     __tablename__ = 'Show'
 
