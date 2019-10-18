@@ -2,20 +2,27 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for, jsonify
+from flask import (
+    Flask,
+    render_template,
+    request,
+    flash,
+    redirect,
+    url_for,
+    jsonify
+)
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 import phonenumbers
 from datetime import datetime
 import logging
 from logging import Formatter, FileHandler
-from flask_wtf import Form
 from wtforms import ValidationError
-from forms import *
+from forms import ShowForm, VenueForm, ArtistForm
 from flask_migrate import Migrate
+from models import Venue, Artist, Show
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -29,74 +36,11 @@ migrate = Migrate(app, db)
 # TODO: connect to a local postgresql database
 
 #----------------------------------------------------------------------------#
-# Models.
-#----------------------------------------------------------------------------#
-
-
-class Venue(db.Model):
-    __tablename__ = 'Venue'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
-    city = db.Column(db.String(120), nullable=False)
-    state = db.Column(db.String(120), nullable=False)
-    address = db.Column(db.String(120), nullable=False)
-    phone = db.Column(db.String(120), nullable=False)
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    genres = db.Column("genres", db.ARRAY(db.String()), nullable=False)
-    website = db.Column(db.String(500))
-    seeking_talent = db.Column(db.Boolean, default=True)
-    seeking_description = db.Column(db.String(120))
-    shows = db.relationship('Show', backref='venue', lazy=True)
-
-    def __repr__(self):
-        return f'<Venue {self.id} {self.name}>'
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-
-class Artist(db.Model):
-    __tablename__ = 'Artist'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
-    city = db.Column(db.String(120), nullable=False)
-    state = db.Column(db.String(120), nullable=False)
-    phone = db.Column(db.String(120))
-    genres = db.Column("genres", db.ARRAY(db.String()), nullable=False)
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    website = db.Column(db.String(500))
-    seeking_venue = db.Column(db.Boolean, default=True)
-    seeking_description = db.Column(db.String(120))
-    shows = db.relationship('Show', backref='artist', lazy=True)
-
-    def __repr__(self):
-        return f'<Artist {self.id} {self.name}>'
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-
-class Show(db.Model):
-    __tablename__ = 'Show'
-
-    id = db.Column(db.Integer, primary_key=True)
-    artist_id = db.Column(db.Integer, db.ForeignKey(
-        'Artist.id'), nullable=False)
-    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
-    start_time = db.Column(db.DateTime, nullable=False,
-                           default=datetime.utcnow)
-
-    def __repr__(self):
-        return f'<Show {self.id}, Artist {self.artist_id}, Venue {self.venue_id}>'
-
-
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
-
-#----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
+
+# used for formatting user time input
+
 
 def format_datetime(value, format='medium'):
     date = dateutil.parser.parse(value)
@@ -109,6 +53,8 @@ def format_datetime(value, format='medium'):
 
 app.jinja_env.filters['datetime'] = format_datetime
 
+# validates user phone numbers
+
 
 def phone_validator(num):
     parsed = phonenumbers.parse(num, "US")
@@ -119,7 +65,7 @@ def phone_validator(num):
 # Controllers.
 #----------------------------------------------------------------------------#
 
-
+# home page route handler
 @app.route('/')
 def index():
     return render_template('pages/home.html')
@@ -128,18 +74,20 @@ def index():
 #  Venues
 #  ----------------------------------------------------------------
 
+# venues page route handler
 @app.route('/venues')
 def venues():
-    # TODO: replace with real venues data.
-    #       num_shows should be aggregated based on number of upcoming shows per venue.
-
+    # list for storing venue data
     data = []
 
+    # get all the venues and create a set from the cities
     venues = Venue.query.all()
     venue_cities = set()
     for venue in venues:
+        # add city/state tuples
         venue_cities.add((venue.city, venue.state))
 
+    # for each unique city/state, add venues
     for location in venue_cities:
         data.append({
             "city": location[0],
@@ -147,15 +95,18 @@ def venues():
             "venues": []
         })
 
+    # get number of upcoming shows for each venue
     for venue in venues:
         num_upcoming_shows = 0
 
         shows = Show.query.filter_by(venue_id=venue.id).all()
 
+        # if the show start time is after now, add to upcoming
         for show in shows:
             if show.start_time > datetime.now():
                 num_upcoming_shows += 1
 
+        # for each entry, add venues to matching city/state
         for entry in data:
             if venue.city == entry['city'] and venue.state == entry['state']:
                 entry['venues'].append({
@@ -164,17 +115,17 @@ def venues():
                     "num_upcoming_shows": num_upcoming_shows
                 })
 
+    # return venues page with data
     return render_template('pages/venues.html', areas=data)
 
-
+# venues search route handler
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-    # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-    # seach for Hop should return "The Musical Hop".
-    # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
-
+    # get the user search term
     search_term = request.form.get('search_term', '')
 
+    # find all venues matching search term
+    # including partial match and case-insensitive
     venues = Venue.query.filter(Venue.name.ilike(f'%{search_term}%')).all()
 
     response = {
@@ -187,50 +138,59 @@ def search_venues():
 
         shows = Show.query.filter_by(venue_id=venue.id).all()
 
+        # calculuate num of upcoming shows for each venue
         for show in shows:
             if show.start_time > datetime.now():
                 num_upcoming_shows += 1
 
+        # add venue data to response
         response['data'].append({
             "id": venue.id,
             "name": venue.name,
             "num_upcoming_shows": num_upcoming_shows,
         })
 
+    # return response with search results
     return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
-
+# route handler for individual venue pages
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-    # shows the venue page with the given venue_id
-    # TODO: replace with real venue data from the venues table, using venue_id
-
+    # get all venues
     venue = Venue.query.filter_by(id=venue_id).first()
 
+    # returns upcoming shows
     def upcoming_shows():
         upcoming = []
+
+        # get all shows for given venue
         shows = Show.query.filter_by(venue_id=venue_id).all()
 
+        # if show is in future, add show details to upcoming
         for show in shows:
             if show.start_time > datetime.now():
                 upcoming.append({
                     "artist_id": show.artist_id,
-                    "artist_name": Artist.query.filter_by(id=show.artist_id).all()[0].name,
-                    "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
+                    "artist_name": Artist.query.filter_by(id=show.artist_id).first().name,
+                    "artist_image_link": Artist.query.filter_by(id=show.artist_id).first().image_link,
                     "start_time": format_datetime(str(show.start_time))
                 })
         return upcoming
 
+    # returns past shows
     def past_shows():
         past = []
+
+        # get all shows for given venue
         shows = Show.query.filter_by(venue_id=venue_id).all()
 
+        # if show is in past, add show details to past
         for show in shows:
             if show.start_time < datetime.now():
                 past.append({
                     "artist_id": show.artist_id,
-                    "artist_name": Artist.query.filter_by(id=show.artist_id).all()[0].name,
-                    "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
+                    "artist_name": Artist.query.filter_by(id=show.artist_id).first().name,
+                    "artist_image_link": Artist.query.filter_by(id=show.artist_id).first().image_link,
                     "start_time": format_datetime(str(show.start_time))
                 })
         return past
